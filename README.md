@@ -8,10 +8,12 @@ C:\seals_project\          <-- Main Project Folder
 ├── data.yaml              <-- Your config
 ├── ice_seals...csv
 │
-├── images\                <-- NEW: Move all .png files here
+├── images\                 
 │   ├── image_01.png
 │   └── ...
 │
-└── labels\                <-- ALREADY EXISTS (from your script)
+└── labels\                
     ├── image_01.txt
     └── ...
+
+Train yolo11s for speed
