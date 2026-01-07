@@ -1,0 +1,48 @@
+# Copy IR imagery from Y:\NMML_Polar\Data\Annotations\ice_seals_2025_202505_manualReviewIR_X\Formatted4Training\ice_seals_2025_irTraining_ir_images.txt
+# To: Y:\NMML_Polar\Data\Annotations\ice_seals_2025_202505_manualReviewIR_X\Formatted4Training\images_newIR
+# Using code provided by Gemini, I ran the following in Windows PowerShell:
+
+# --- CONFIGURATION ---
+# Path to your text file containing the list of image paths
+$SourceList = "C:\Users\YourName\Documents\image_list.txt"
+
+# Folder where you want all images to end up
+$DestinationFolder = "C:\seals_project\images"
+
+# --- SCRIPT LOGIC ---
+# Create destination if it doesn't exist
+if (-not (Test-Path -Path $DestinationFolder)) {
+    New-Item -ItemType Directory -Path $DestinationFolder -Force | Out-Null
+    Write-Host "Created folder: $DestinationFolder" -ForegroundColor Cyan
+}
+
+# Read the file list
+$files = Get-Content -Path $SourceList
+
+$count = 0
+$total = $files.Count
+
+foreach ($filePath in $files) {
+    # Skip empty lines
+    if ([string]::IsNullOrWhiteSpace($filePath)) { continue }
+
+    # Clean up quotes if present
+    $filePath = $filePath.Trim('"').Trim("'")
+
+    if (Test-Path -Path $filePath) {
+        try {
+            # Copy the file to the destination
+            Copy-Item -Path $filePath -Destination $DestinationFolder -Force
+            $count++
+            Write-Host "[$count / $total] Copied: $filePath" -ForegroundColor Green
+        }
+        catch {
+            Write-Host "FAILED to copy: $filePath" -ForegroundColor Red
+            Write-Host "Error: $_" -ForegroundColor Red
+        }
+    }
+    else {
+        Write-Host "File not found: $filePath" -ForegroundColor Yellow
+    }
+}
+Write-Host "Finished! Copied $count files to $DestinationFolder" -ForegroundColor Cyan
