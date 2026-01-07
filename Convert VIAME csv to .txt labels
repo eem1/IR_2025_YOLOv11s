@@ -1,0 +1,70 @@
+# Convert VIAME detection files from csv format to individual .txt lables for each image by running the create_labels.py
+# in the folder with images and detection csv
+
+import pandas as pd
+import os
+
+# --- CONFIGURATION ---
+csv_file = 'ice_seals_2025_irTraining_ir_detections_yolo.csv'
+output_dir = 'labels'
+img_width = 640   # Change if your images are different
+img_height = 512  # Change if your images are different
+
+# Map your species to IDs
+class_map = {'hotspot': 0}
+
+# 1. Create the output directory
+os.makedirs(output_dir, exist_ok=True)
+
+# 2. Load the CSV
+print(f"Reading {csv_file}...")
+try:
+    df = pd.read_csv(csv_file)
+except FileNotFoundError:
+    print(f"ERROR: Could not find {csv_file}. Make sure it is in this folder.")
+    exit()
+
+# 3. Process the data
+# Group by 'image_name' so we process one image at a time
+grouped = df.groupby('image_name')
+
+count = 0
+for image_name, group in grouped:
+    # Create the text filename (e.g., image1.tif -> image1.txt)
+    base_name = os.path.splitext(image_name)[0]
+    txt_path = os.path.join(output_dir, base_name + ".txt")
+    
+    yolo_lines = []
+    
+    for index, row in group.iterrows():
+        # Extract data
+        species = row['species']
+        class_id = class_map.get(species, 0)
+        
+        tl_x, tl_y = row['tl_x'], row['tl_y']
+        br_x, br_y = row['br_x'], row['br_y']
+        
+        # YOLO Calculations
+        w = br_x - tl_x
+        h = br_y - tl_y
+        x_center = tl_x + (w / 2.0)
+        y_center = tl_y + (h / 2.0)
+        
+        # Normalize
+        norm_x = x_center / img_width
+        norm_y = y_center / img_height
+        norm_w = w / img_width
+        norm_h = h / img_height
+        
+        # Format line: class x y w h
+        yolo_lines.append(f"{class_id} {norm_x:.6f} {norm_y:.6f} {norm_w:.6f} {norm_h:.6f}")
+    
+    # Write the file
+    with open(txt_path, 'w') as f:
+        f.write('\n'.join(yolo_lines))
+        
+    count += 1
+
+print(f"Success! Created {count} label files in the '{output_dir}' folder.")
+
+# run script from powershell: python create_labels.py
