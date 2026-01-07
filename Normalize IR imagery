@@ -1,0 +1,40 @@
+import os
+import cv2
+import numpy as np
+import glob
+
+# --- CONFIGURATION ---
+input_folder = "."  # Where your .tif files are
+delete_tifs = False  # Set to True if you want to delete originals after converting
+
+# Get list of all .tif files
+tif_files = glob.glob(os.path.join(input_folder, "*.tif"))
+print(f"Found {len(tif_files)} .tif files to convert.")
+
+for tif_path in tif_files:
+    # 1. Read the thermal image (keeping original bit-depth)
+    img = cv2.imread(tif_path, cv2.IMREAD_UNCHANGED)
+    
+    if img is None:
+        print(f"Skipping corrupt file: {tif_path}")
+        continue
+
+    # 2. Normalize to 8-bit (0-255)
+    # This ensures the 'hot' pixels are 255 (white) and 'cold' are 0 (black)
+    # regardless of the original sensor range.
+    img_float = img.astype(float)
+    img_norm = (img_float - img_float.min()) / (img_float.max() - img_float.min()) * 255.0
+    img_8bit = img_norm.astype(np.uint8)
+
+    # 3. Save as .png
+    # Replace extension .tif -> .png
+    png_path = os.path.splitext(tif_path)[0] + ".png"
+    cv2.imwrite(png_path, img_8bit)
+    
+    # 4. (Optional) Cleanup
+    if delete_tifs:
+       os.remove(tif_path)
+    
+    print(f"Converted: {os.path.basename(tif_path)} -> .png")
+
+print("Conversion complete!")
