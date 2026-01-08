@@ -1,0 +1,47 @@
+import os
+import cv2
+import numpy as np
+import glob
+
+input_folder = "."  # Current folder
+output_folder = "images_robust_001percent" # Create a new folder to compare
+os.makedirs(output_folder, exist_ok=True)
+
+tif_files = glob.glob(os.path.join(input_folder, "*.tif"))
+print(f"Processing {len(tif_files)} files with Robust Normalization...")
+
+for tif_path in tif_files:
+    # 1. Read the 16-bit thermal image
+    img = cv2.imread(tif_path, cv2.IMREAD_UNCHANGED)
+    
+    if img is None:
+        continue
+
+    img_float = img.astype(float)
+    
+    # --- ROBUST NORMALIZATION ---
+    # Calculate the 0.001 and 99.999 percentiles
+    # This ignores the darkest .001% (noise) and brightest 99.999% (hot pixels)
+    min_val = np.percentile(img_float, 0.001)   
+    max_val = np.percentile(img_float, 99.999)  
+    
+    # Clip the data to this range
+    # Anything above max_val becomes max_val (bad hot pixels become just "bright")
+    img_clipped = np.clip(img_float, min_val, max_val)
+    
+    # Normalize the clipped data to 0-255
+    if max_val - min_val == 0:
+        # Avoid divide by zero for flat images
+        img_8bit = np.zeros(img.shape, dtype=np.uint8)
+    else:
+        img_norm = (img_clipped - min_val) / (max_val - min_val) * 255.0
+        img_8bit = img_norm.astype(np.uint8)
+    
+    # ----------------------------
+
+    # Save as .png in the new folder
+    base_name = os.path.splitext(os.path.basename(tif_path))[0]
+    png_path = os.path.join(output_folder, base_name + ".png")
+    cv2.imwrite(png_path, img_8bit)
+
+print("Robust conversion complete!")
