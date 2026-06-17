@@ -1,20 +1,28 @@
 data prep for training yolo11s IR detection model on imagery with hot pixels ("spicy")
 
 Folder Structure 
-
+```text
 C:\seals_project\          <-- Main Project Folder
 ├── train.py               <-- Your script
+├── validate.py            <-- Your validation script
 ├── data.yaml              <-- Your config
-├── ice_seals...csv
 │
-├── images\                 
-│   ├── image_01.png
+├── images\                <-- Training imagery folder 
+│   ├── train_image_01.png
 │   └── ...
 │
-└── labels\                
-    ├── image_01.txt  
+├── labels\                <-- Labels for training imagery 
+    ├── train_image_01.txt  
     └── ...
-    
+├── validation\            <-- Validation dataset folder
+    ├── images\                 
+│       ├── val_image_01.png
+│       └── ...
+│
+    ├── labels\                
+        ├── val_image_01.txt  
+        └── ...
+``` 
 
 Trained yolo11s for speed and accuracy
 600 epochs, stop after 50 decline
