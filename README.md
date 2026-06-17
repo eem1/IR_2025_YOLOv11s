@@ -35,7 +35,7 @@ Final pipeline (2025_batch_norm_yolo11s.py):
 2) normalize imagery (despice [replace hot pixel with ave of surrounding values], 0.001% min/max, linear stretch)
 3) run spicy v11s best.pt model on image
 4) do not save normalized image
-5) save detections to VIAME csv format
+5) save detections to VIAME csv format in same flight camera folder with image list
 
 
 
